@@ -5,7 +5,7 @@ from schemas import ProductCreate, ProductResponse
 from database import Base, engine, get_db
 from models import Product
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -79,4 +79,22 @@ async def delete_product(id: int, db: AsyncSession = Depends(get_db)):
   await db.commit()
 
   return None
-    
+
+# Used ProductCreate schema because of similarity
+@app.put("/products/{id}", status_code=status.HTTP_200_OK)
+async def update_product(id: int, payload: ProductCreate, db: AsyncSession = Depends(get_db)):
+  product = await db.get(Product, id)
+  
+  if product is None:
+    raise HTTPException(
+          status_code=404,
+          detail="Product not found"
+        )
+  
+  for field, value in payload.model_dump().items():
+    print(field, value, product)
+    setattr(product, field, value)
+  
+  await db.commit()
+
+  return {"status": 200, "message": "Product updated successfully"}

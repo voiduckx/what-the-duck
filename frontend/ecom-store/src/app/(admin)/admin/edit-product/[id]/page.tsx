@@ -1,14 +1,16 @@
 "use client";
 
-import { Product } from "@/app/api/products/route";
+import { Product } from "@/lib/types";
 import { ProductForm } from "@/components/product-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ProductFormData } from "@/app/schemas/product";
 
 export default function EditProductPage() {
   const params = useParams();
   const [product, setProduct] = useState<Product | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchProduct() {
@@ -17,8 +19,7 @@ export default function EditProductPage() {
         if (response.ok) {
           const data = await response.json();
           setProduct(data);
-        }
-        else{
+        } else {
           console.log("Somehting went wrong");
         }
       } catch {
@@ -28,12 +29,24 @@ export default function EditProductPage() {
     fetchProduct();
   }, [params.id]);
 
-  function onSubmit() {
-    // Implement updating
-    console.log("Submitting");
+  async function onSubmit(data: ProductFormData) {
+    try {
+      const response = await fetch(`/api/products/${params.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (response.ok) {
+        router.push("/admin/products");
+      } else {
+        console.log("Failed to update product", await response.json());
+      }
+    } catch (error) {
+      console.log(`Error: ${error}`);
+    }
   }
 
-  if(!product){
+  if (!product) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex h-64 items-center justify-center">
@@ -47,10 +60,10 @@ export default function EditProductPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Edit: {product.title}</h1>
-        <p className="text-muted-foreground">
-          Edit a product.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Edit {id}: {product.title}
+        </h1>
+        <p className="text-muted-foreground">Edit a product.</p>
       </div>
 
       <Card>

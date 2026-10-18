@@ -3,25 +3,7 @@
 import { ProductForm } from "@/components/product-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
-import * as z from "zod";
-
-const productSchema = z.object({
-  title: z.string().min(1, "Product title is required"),
-  price: z.string().min(1, "Price is required"),
-  image: z.string().url("Please enter a valid URL").optional(),
-  description: z.string().optional(),
-  category: z.string().optional(),
-});
-
-const initialValues = {
-  title: "",
-  price: "",
-  image: "",
-  description: "",
-  category: "",
-};
-
-type ProductFormData = z.infer<typeof productSchema>;
+import { ProductFormData } from "@/app/schemas/product";
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -61,7 +43,6 @@ export default function AddProductPage() {
         </CardHeader>
         <CardContent>
           <ProductForm
-            initial={initialValues}
             onSubmit={onSubmit}
             submitLabel="Add Product"
           />

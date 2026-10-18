@@ -12,25 +12,17 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-
-const productSchema = z.object({
-  title: z.string().min(1, "Product title is required"),
-  price: z.number().min(1, "Price is required"),
-  image: z.string().url("Please enter a valid URL").optional(),
-  description: z.string().optional(),
-  category: z.string().optional(),
-});
-
-// produce a type based on zod schema
-export type ProductFormValues = z.infer<typeof productSchema>
+import {
+  productSchema,
+  type ProductFormData,
+  type ProductFormInput,
+} from "@/app/schemas/product";
 
 interface Props {
-  initial?: ProductFormValues;
-  onSubmit: (values: ProductFormValues) => Promise<void>;
+  initial?: ProductFormData;
+  onSubmit: (values: ProductFormData) => Promise<void>;
   submitLabel: string;
 }
 
@@ -38,20 +30,23 @@ export function ProductForm({ initial, onSubmit, submitLabel }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  type ProductFormData = z.infer<typeof productSchema>;
-  const form = useForm<ProductFormData>({
+  const form = useForm<ProductFormInput, unknown, ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      ...initial
+      title: initial?.title ?? "",
+      price: initial ? String(initial.price) : "",
+      image: initial?.image ?? "",
+      description: initial?.description ?? "",
+      category: initial?.category ?? "",
     },
   });
 
-  async function handleSubmit(values:ProductFormValues) {
+  async function handleSubmit(values: ProductFormData) {
     setLoading(true);
-    try{
-      await onSubmit(values)
-    }finally {
-      setLoading(false)
+    try {
+      await onSubmit(values);
+    } finally {
+      setLoading(false);
     }
   }
 

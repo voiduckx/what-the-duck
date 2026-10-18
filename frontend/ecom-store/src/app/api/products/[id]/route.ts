@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { ProductCreate, ProductResponse } from "@/lib/types";
 
 const API_URL = process.env.API_URL;
 
@@ -67,4 +68,67 @@ export async function DELETE(
 
   // 204 - No body
   return new NextResponse(null, { status: 204 });
+}
+
+export interface FastAPIError {
+  detail?: string | { msg: string; loc: (string | number)[] }[];
+}
+// ------UPDATE a product
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
+  // Get id from params
+  const {id} = await params;
+  const productId = Number(id)
+
+  
+  // check for correct ID
+  if (!Number.isInteger(productId) || productId <= 0)
+    return NextResponse.json({ detail: "Invalid product ID" }, { status: 400 });
+
+  // Get product from body
+  let body: ProductCreate;
+  try{
+    body = (await request.json()) as ProductCreate;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  // Send UPDATE request
+  let res: Response;
+  try{
+    res = await fetch(`${API_URL}/products/${productId}`,{
+      method: "PUT",
+      headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+    })
+  } catch{
+    return NextResponse.json({ error: "Backend unavailable" }, { status: 502 });
+  }
+
+  // Parse FastAPI response
+    const data: ProductResponse | FastAPIError | null = await res
+      .json()
+      .catch(() => null);
+  
+    // Non OK response
+    if (!res.ok) {
+      const errorData = data as FastAPIError | null;
+      const detail = errorData?.detail;
+  
+      const message =
+        typeof detail === "string"
+          ? detail
+          : Array.isArray(detail)
+            ? detail.map((d) => d.msg).join(", ")
+            : "Request failed";
+  
+      return NextResponse.json({ error: message }, { status: res.status });
+    }
+  
+    // Success response
+    return NextResponse.json(data as ProductResponse, { status: res.status });
 }
