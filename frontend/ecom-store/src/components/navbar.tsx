@@ -16,6 +16,7 @@ import { useCart } from "@/lib/cart-context";
 import {
   CreditCard,
   Heart,
+  LogIn,
   LogOut,
   Package,
   Settings,
@@ -129,6 +130,13 @@ export default function Navbar() {
                   >
                     <User className="mr-2 h-4 w-4" />
                     <span>Login as Admin</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={login}
+                    className="flex items-center"
+                  >
+                    <LogIn className="mr-2 h-4 w-4" />
+                    <span>Login / Sign Up</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>

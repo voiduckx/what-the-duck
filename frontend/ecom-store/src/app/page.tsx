@@ -1,4 +1,4 @@
-import { Product } from "@/app/api/products/route";
+import { Product } from "@/lib/types";
 import Navbar from "@/components/navbar";
 import ProductCard from "@/components/product-card";
 import Image from "next/image";

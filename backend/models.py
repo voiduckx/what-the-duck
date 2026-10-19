@@ -19,6 +19,11 @@ class User(Base):
   city: Mapped[str] = mapped_column(String(100))
   state: Mapped[str] = mapped_column(String(100))
   zipcode: Mapped[str] = mapped_column(String(20))
+  role: Mapped[str] = mapped_column(
+    String(20),
+    default="user",
+    server_default="user"
+  )
   
   created_at: Mapped[datetime] = mapped_column(
     DateTime(timezone=True),

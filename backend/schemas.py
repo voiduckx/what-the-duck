@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel, Field
 
 
@@ -17,5 +18,24 @@ class ProductResponse(BaseModel):
   description: str
   category: str
   
+  model_config = {"from_attributes": True}
+
+
+class UserResponse(BaseModel):
+  id: int
+  email: str
+  first_name: str
+  last_name: str
+  phone_number: str
+  bio: str
+  address: str
+  city: str
+  state: str
+  zipcode: str
+  
+  created_at: datetime
+  updated_at: datetime
+  last_login: datetime
+
   model_config = {"from_attributes": True}
   
