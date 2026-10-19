@@ -131,12 +131,11 @@ export default function Navbar() {
                     <User className="mr-2 h-4 w-4" />
                     <span>Login as Admin</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={login}
-                    className="flex items-center"
-                  >
-                    <LogIn className="mr-2 h-4 w-4" />
-                    <span>Login / Sign Up</span>
+                  <DropdownMenuItem asChild>
+                    <Link href="/login" className="flex items-center">
+                      <LogIn className="mr-2 h-4 w-4" />
+                      <span>Login / Sign Up</span>
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
