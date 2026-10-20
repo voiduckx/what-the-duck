@@ -1,8 +1,12 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
-from schemas.user import UserResponse
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+from asyncpg.exceptions import UniqueViolationError
+from security import hash_password
+from schemas.user import UserResponse, UserCreate
 from database import get_db
-from user import User
+from models import User
 
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -13,6 +17,32 @@ async def list_users(db=Depends(get_db)):
   users = result.scalars().all()
   
   return users
+
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def create_user(payload: UserCreate, db: AsyncSession=Depends(get_db)):
+  # Create user
+  user = User(
+    email=payload.email,
+    password=hash_password(payload.password.get_secret_value()),
+    role="user"
+  )
+  
+  # register object to session - SYNC - No postgres talking
+  db.add(user)
+  
+  try:
+    # create the row - ASYNC - add to postgres permanently
+    await db.commit()
+  except IntegrityError as e:
+    await db.rollback()
+    if isinstance(e.orig, UniqueViolationError):
+      raise HTTPException(409, "Email already registered")
+    raise
+  
+  await db.refresh(user)
+
+  return user
+  
   
 @router.get("/{id}")
 async def get_user(id: int, db = Depends(get_db)):

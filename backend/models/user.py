@@ -11,14 +11,14 @@ class User(Base):
   id: Mapped[int] = mapped_column(primary_key=True)
   email: Mapped[str] = mapped_column(String(100), unique=True)
   password: Mapped[str] = mapped_column(String(255))
-  first_name: Mapped[str] = mapped_column(String(100))
-  last_name: Mapped[str] = mapped_column(String(100))
-  phone_number: Mapped[str] = mapped_column(String(20), unique=True)
-  bio: Mapped[str] = mapped_column(String(255))
-  address: Mapped[str] = mapped_column(String(255))
-  city: Mapped[str] = mapped_column(String(100))
-  state: Mapped[str] = mapped_column(String(100))
-  zipcode: Mapped[str] = mapped_column(String(20))
+  first_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+  last_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+  phone_number: Mapped[str | None] = mapped_column(String(20), unique=True, nullable=True)
+  bio: Mapped[str | None] = mapped_column(String(255), nullable=True)
+  address: Mapped[str | None] = mapped_column(String(255), nullable=True)
+  city: Mapped[str | None] = mapped_column(String(100), nullable=True)
+  state: Mapped[str | None] = mapped_column(String(100), nullable=True)
+  zipcode: Mapped[str | None] = mapped_column(String(20), nullable=True)
   role: Mapped[str] = mapped_column(
     String(20),
     default="user",
