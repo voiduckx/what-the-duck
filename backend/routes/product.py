@@ -1,5 +1,5 @@
 from fastapi import Depends, APIRouter, HTTPException, status
-from schemas import ProductCreate, ProductResponse
+from schemas.product import ProductCreate, ProductResponse
 from database import get_db
 from models import Product
 
