@@ -35,7 +35,9 @@ async def create_user(payload: UserCreate, db: AsyncSession=Depends(get_db)):
     await db.commit()
   except IntegrityError as e:
     await db.rollback()
-    if isinstance(e.orig, UniqueViolationError):
+
+    # 23505 is postgres status code for unique_violation
+    if getattr(e.orig, "sqlstate", None) == "23505":
       raise HTTPException(409, "Email already registered")
     raise
   
