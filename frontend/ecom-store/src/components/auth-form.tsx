@@ -1,35 +1,48 @@
 "use client";
 
+import { UserLoginFormData, userLoginSchema, UserRegisterFormData, userRegisterSchema } from "@/app/schemas/user";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
 import type { FormEvent } from "react";
 
-interface AuthFormProps {
-  mode: "login" | "signup";
-}
+type AuthFormProps =
+  | { mode: "login"; onSubmit: (values: UserLoginFormData) => Promise<void> }
+  | {
+      mode: "signup";
+      onSubmit: (values: UserRegisterFormData) => Promise<void>;
+    };
 
-export default function AuthForm({ mode }: AuthFormProps) {
+export default function AuthForm(props: AuthFormProps) {
+  const { mode, onSubmit } = props;
   const isSignup = mode === "signup";
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [message, setMessage] = useState("");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (isSignup && password !== confirmation) {
-      setMessage("Your passwords don't match. Please check them and try again.");
-      return;
+    // get email from event
+    const email = new FormData(event.currentTarget).get("email") as string;
+    
+    setMessage("");
+
+    // Parse input values based on zod schema
+    if(mode === "login") {
+      const parsed =  userLoginSchema.safeParse({email, password})
+      if (!parsed.success) return setMessage(parsed.error.issues[0].message);
+      await onSubmit(parsed.data)
+    } else {
+      const parsed = userRegisterSchema.safeParse({email, password, passwordConfirmation: confirmation})
+      if(!parsed.success) return setMessage(parsed.error.issues[0].message);
+      await onSubmit(parsed.data)
     }
 
-    setMessage(
-      "Authentication isn't connected yet, so your details haven't been sent."
-    );
   }
 
   return (
-    <section className="w-full max-w-md rounded-3xl border bg-card p-7 shadow-xl shadow-foreground/5 sm:p-10">
+    <section className="bg-card shadow-foreground/5 w-full max-w-md rounded-3xl border p-7 shadow-xl sm:p-10">
       <div className="mb-8">
         <p className="text-primary mb-3 text-sm font-semibold tracking-[0.18em] uppercase">
           {isSignup ? "Join the flock" : "Welcome back"}
@@ -56,7 +69,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
             autoComplete="email"
             placeholder="you@example.com"
             required
-            className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring h-12 w-full rounded-xl border px-4 text-sm outline-none transition focus-visible:ring-2"
+            className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring h-12 w-full rounded-xl border px-4 text-sm transition outline-none focus-visible:ring-2"
           />
         </div>
 
@@ -76,7 +89,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
               setPassword(event.target.value);
               setMessage("");
             }}
-            className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring h-12 w-full rounded-xl border px-4 text-sm outline-none transition focus-visible:ring-2"
+            className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring h-12 w-full rounded-xl border px-4 text-sm transition outline-none focus-visible:ring-2"
           />
         </div>
 
@@ -100,7 +113,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                 setConfirmation(event.target.value);
                 setMessage("");
               }}
-              className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring h-12 w-full rounded-xl border px-4 text-sm outline-none transition focus-visible:ring-2"
+              className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring h-12 w-full rounded-xl border px-4 text-sm transition outline-none focus-visible:ring-2"
             />
           </div>
         )}
@@ -108,7 +121,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
         {message && (
           <p
             role="alert"
-            className="text-destructive rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm"
+            className="text-destructive border-destructive/30 bg-destructive/5 rounded-lg border px-3 py-2 text-sm"
           >
             {message}
           </p>
@@ -128,15 +141,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
           type="button"
           variant="outline"
           className="h-12 w-full rounded-xl text-base"
-          onClick={() =>
-            setMessage("Google sign-in isn't configured yet.")
-          }
+          onClick={() => setMessage("Google sign-in isn't configured yet.")}
         >
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 48 48"
-            className="size-5"
-          >
+          <svg aria-hidden="true" viewBox="0 0 48 48" className="size-5">
             <path
               fill="#4285F4"
               d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11a9.4 9.4 0 0 1-4.1 6.2v5.1h6.6c3.9-3.6 6.1-8.8 6.1-15Z"
