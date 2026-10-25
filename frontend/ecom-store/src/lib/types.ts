@@ -22,3 +22,7 @@ export interface ProductCreate {
   description?: string | null;
   category?: string | null;
 }
+
+export interface FastAPIError {
+  detail?: string | { msg: string; loc: (string | number)[] }[];
+}

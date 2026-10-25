@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
-import { ProductCreate, ProductResponse } from "@/lib/types";
+import { FastAPIError, ProductCreate, ProductResponse } from "@/lib/types";
 
-export interface FastAPIError {
-  detail?: string | { msg: string; loc: (string | number)[] }[];
-}
 
 const API_URL = process.env.API_URL;
 
