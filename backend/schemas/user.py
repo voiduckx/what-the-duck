@@ -33,3 +33,7 @@ class UserCreate(BaseModel):
 
     return self
 
+class UserLogin(BaseModel):
+  email: EmailStr
+  password: SecretStr = Field(min_length=8, max_length=72)
+  

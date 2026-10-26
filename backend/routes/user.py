@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from asyncpg.exceptions import UniqueViolationError
 from security import hash_password
-from schemas.user import UserResponse, UserCreate
+from schemas.user import UserLogin, UserResponse, UserCreate
 from database import get_db
 from models import User
 
@@ -44,6 +44,10 @@ async def create_user(payload: UserCreate, db: AsyncSession=Depends(get_db)):
   await db.refresh(user)
 
   return user
+
+@router.post("/login", status_code=status.HTTP_200_OK)
+async def login_user(payload: UserLogin, db: AsyncSession=Depends(get_db)):
+  return {"status":200, "message": "you are logged in"}
   
   
 @router.get("/{id}")

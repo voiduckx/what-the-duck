@@ -9,7 +9,7 @@ export default function SignupPage() {
   async function onSubmit(values: UserRegisterFormData): Promise<void> {
     let response: Response
     try {
-      response = await fetch(`/api/users`, {
+      response = await fetch(`/api/users/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
