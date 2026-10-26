@@ -7,26 +7,25 @@ export default function SignupPage() {
   const router = useRouter();
 
   async function onSubmit(values: UserRegisterFormData): Promise<void> {
+    let response: Response
     try {
-      const response = await fetch(`/api/users`, {
+      response = await fetch(`/api/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(values),
       });
-
-      console.log(response)
-      if (response.ok) {
-        router.push("/");
-      } else {
-        console.error("Failed to add user");
-      }
-    } catch (error) {
-      console.error(
-        error instanceof Error ? error.message : "Something went wrong"
-      );
+    } catch {
+      throw new Error("Network error - please try again")
     }
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => null)
+      throw new Error(data?.error ?? "Registration failed")
+    }
+    
+    router.push("/login")
   }
   return (
     <div className="from-secondary/70 via-background to-background flex min-h-[calc(100svh-4rem)] items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] px-4 py-12">

@@ -1,6 +1,11 @@
 "use client";
 
-import { UserLoginFormData, userLoginSchema, UserRegisterFormData, userRegisterSchema } from "@/app/schemas/user";
+import {
+  UserLoginFormData,
+  userLoginSchema,
+  UserRegisterFormData,
+  userRegisterSchema,
+} from "@/app/schemas/user";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
@@ -25,20 +30,32 @@ export default function AuthForm(props: AuthFormProps) {
 
     // get email from event
     const email = new FormData(event.currentTarget).get("email") as string;
-    
+
     setMessage("");
 
     // Parse input values based on zod schema
-    if(mode === "login") {
-      const parsed =  userLoginSchema.safeParse({email, password})
-      if (!parsed.success) return setMessage(parsed.error.issues[0].message);
-      await onSubmit(parsed.data)
-    } else {
-      const parsed = userRegisterSchema.safeParse({email, password, passwordConfirmation: confirmation})
-      if(!parsed.success) return setMessage(parsed.error.issues[0].message);
-      await onSubmit(parsed.data)
-    }
+    const parsed =
+      mode === "login"
+        ? userLoginSchema.safeParse({ email, password })
+        : userRegisterSchema.safeParse({
+            email,
+            password,
+            passwordConfirmation: confirmation,
+          });
+    if (!parsed.success) return setMessage(parsed.error.issues[0].message);
 
+    // call onSubmit function based on mode
+    try {
+      if (mode === "login") {
+        await onSubmit(parsed.data as UserLoginFormData);
+      } else {
+        await onSubmit(parsed.data as UserRegisterFormData);
+      }
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Something went wrong"
+      );
+    }
   }
 
   return (
