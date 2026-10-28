@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from asyncpg.exceptions import UniqueViolationError
-from security import hash_password
+from security import clear_auth_cookie, create_access_token, hash_password, set_auth_cookie, verify_password
 from schemas.user import UserLogin, UserResponse, UserCreate
 from database import get_db
 from models import User
@@ -19,7 +18,7 @@ async def list_users(db=Depends(get_db)):
   return users
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def create_user(payload: UserCreate, db: AsyncSession=Depends(get_db)):
+async def create_user(payload: UserCreate, response: Response, db: AsyncSession=Depends(get_db)):
   # Create user
   user = User(
     email=payload.email,
@@ -42,13 +41,39 @@ async def create_user(payload: UserCreate, db: AsyncSession=Depends(get_db)):
     raise
   
   await db.refresh(user)
+  
+  # Login user after registraion
+  token = create_access_token({"sub": str(user.id)})
+  set_auth_cookie(response, token)
 
   return user
 
+
+# Login user
 @router.post("/login", status_code=status.HTTP_200_OK)
-async def login_user(payload: UserLogin, db: AsyncSession=Depends(get_db)):
-  return {"status":200, "message": "you are logged in"}
+async def login_user(payload: UserLogin, response: Response, db: AsyncSession=Depends(get_db)):
+  # Get user from DB
+  user = await db.scalar(select(User).where(User.email == payload.email))
+
+  if not user:
+    raise HTTPException(401, "Invalid email")
+
+  if not verify_password(payload.password.get_secret_value(), user.password):
+    raise HTTPException(401, "Password is not correct")
   
+  # Login user with cookie
+  token = create_access_token({"sub": user.id})
+  set_auth_cookie(response, token)
+
+  return {"message": "Login successful"}
+  
+
+# Logout user
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout_user(response: Response):
+  clear_auth_cookie(response)
+  return None
+
   
 @router.get("/{id}")
 async def get_user(id: int, db = Depends(get_db)):
