@@ -1,10 +1,14 @@
 import os
 
-from fastapi import Response
+from fastapi import Depends, Response, Cookie, HTTPException, status
 import jwt
 from datetime import datetime, timedelta, timezone
+from sqlalchemy.ext.asyncio import AsyncSession
+from models import User
 from pwdlib import PasswordHash
 from dotenv import load_dotenv
+
+from database import get_db
 
 # Read .env variables
 load_dotenv()
@@ -62,3 +66,29 @@ def clear_auth_cookie(response: Response) -> None:
     secure=False,
     samesite="lax",
   )
+
+
+async def get_current_user(
+  access_token: str | None = Cookie(None, alias=ACCESS_TOKEN_COOKIE),
+  db: AsyncSession = Depends(get_db)) -> User:
+  credential_excpetion = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Not authenticated"
+  )
+  
+  if not access_token:
+    raise credential_excpetion
+  
+  try:
+    payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+    user_id = payload.get("sub")
+    if user_id is None:
+      raise credential_excpetion
+  except jwt.PyJWTError:
+    raise credential_excpetion
+  
+  user = await db.get(User, int(user_id))
+  if user is None:
+    raise credential_excpetion
+
+  return user

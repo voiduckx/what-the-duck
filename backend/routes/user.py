@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from security import clear_auth_cookie, create_access_token, hash_password, set_auth_cookie, verify_password
+from security import clear_auth_cookie, create_access_token, get_current_user, hash_password, set_auth_cookie, verify_password
 from schemas.user import UserLogin, UserResponse, UserCreate
 from database import get_db
 from models import User
@@ -73,6 +73,11 @@ async def login_user(payload: UserLogin, response: Response, db: AsyncSession=De
 async def logout_user(response: Response):
   clear_auth_cookie(response)
   return None
+
+# return current user
+@router.get("/me", response_model=UserResponse)
+async def read_me(current_user: User = Depends(get_current_user)):
+  return current_user
 
   
 @router.get("/{id}")
