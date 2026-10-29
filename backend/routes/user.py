@@ -62,7 +62,7 @@ async def login_user(payload: UserLogin, response: Response, db: AsyncSession=De
     raise HTTPException(401, "Password is not correct")
   
   # Login user with cookie
-  token = create_access_token({"sub": user.id})
+  token = create_access_token({"sub": str(user.id)})
   set_auth_cookie(response, token)
 
   return {"message": "Login successful"}

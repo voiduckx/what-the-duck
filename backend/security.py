@@ -24,7 +24,7 @@ def _require_env(name: str) -> str:
 SECRET_KEY: str = _require_env("SECRET_KEY")
 ALGORITHM: str = _require_env("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES") or 30)
-ACCESS_TOKEN_COOKIE = "access"
+ACCESS_TOKEN_COOKIE = "access_token"
 
 pwd_context = PasswordHash.recommended()
 
