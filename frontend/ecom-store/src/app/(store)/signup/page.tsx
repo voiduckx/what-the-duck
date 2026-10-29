@@ -25,7 +25,7 @@ export default function SignupPage() {
       throw new Error(data?.error ?? "Registration failed")
     }
     
-    router.push("/login")
+    router.push("/")
   }
   return (
     <div className="from-secondary/70 via-background to-background flex min-h-[calc(100svh-4rem)] items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] px-4 py-12">

@@ -17,7 +17,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   const payload = {
     email: body.email,
     password: body.password,
-  }
+  };
 
   // Forward to FastAPI
   let res: Response;
@@ -48,10 +48,16 @@ export async function POST(request: Request): Promise<NextResponse> {
         : Array.isArray(detail)
           ? detail.map((d) => d.msg).join(", ")
           : "Request failed";
-    
-    return NextResponse.json({error: message}, {status: res.status})
+
+    return NextResponse.json({ error: message }, { status: res.status });
   }
 
   // success
-  return NextResponse.json(data as UserLoginFormData, {status: res.status})
+  const response = NextResponse.json(data, { status: res.status });
+
+  // forward FastAPI cookies to browser
+  const setCookie = res.headers.get("set-cookie");
+  if (setCookie) response.headers.set("set-cookie", setCookie);
+  
+  return response;
 }

@@ -5,6 +5,27 @@ import { CartProvider } from "@/lib/cart-context";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { cookies } from "next/headers";
+
+const API_URL = process.env.API_URL;
+
+async function getCurrentUser() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
+
+  if (!token) return null;
+
+  try {
+    const res = await fetch(`${API_URL}/users/me`, {
+      headers: { Cookie: `access_token=${token}` },
+      cache: "no-store",
+    });
+
+    return res.ok ? await res.json() : null;
+  } catch {
+    return null;
+  }
+}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,11 +42,12 @@ export const metadata: Metadata = {
   description: "Duck, Duck, Goose... Just Kidding, It's a Store",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getCurrentUser();
   return (
     <html lang="en" suppressHydrationWarning>
       <body
