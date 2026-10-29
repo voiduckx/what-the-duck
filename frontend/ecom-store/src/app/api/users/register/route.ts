@@ -54,5 +54,11 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   // success
-  return NextResponse.json(data as UserRegisterFormData, {status: res.status})
+  const response = NextResponse.json(data as UserRegisterFormData, {status: res.status})
+
+  // set-cookie is comming from FastAPI and contains access_token
+  const setCookie = res.headers.get("set-cookie")
+  if(setCookie) response.headers.set("set-cookie", setCookie)
+  
+  return response
 }
